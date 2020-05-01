@@ -426,7 +426,15 @@ defmodule Mint.Core.Transport.SSL do
     verify_fun_present? = Keyword.has_key?(opts, :verify_fun)
 
     if not verify_fun_present? do
-      reference_ids = [dns_id: host_or_ip, ip: host_or_ip]
+      reference_ids =
+        case Keyword.fetch(opts, :server_name_indication) do
+          {:ok, sni} ->
+            [dns_id: to_charlist(sni)]
+
+          :error ->
+            [dns_id: host_or_ip, ip: host_or_ip]
+        end
+
       Keyword.put(opts, :verify_fun, {&verify_fun/3, reference_ids})
     else
       opts
