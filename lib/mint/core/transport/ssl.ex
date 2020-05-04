@@ -426,13 +426,16 @@ defmodule Mint.Core.Transport.SSL do
     verify_fun_present? = Keyword.has_key?(opts, :verify_fun)
 
     if not verify_fun_present? do
-      reference_ids =
+      {opts, reference_ids} =
         case Keyword.fetch(opts, :server_name_indication) do
           {:ok, sni} ->
-            [dns_id: to_charlist(sni)]
+            # Erlang complains if the sni is a binary
+            sni = to_charlist(sni)
+            opts = Keyword.put(opts, :server_name_indication, sni)
+            {opts, [dns_id: sni]}
 
           :error ->
-            [dns_id: host_or_ip, ip: host_or_ip]
+            {opts, [dns_id: host_or_ip, ip: host_or_ip]}
         end
 
       Keyword.put(opts, :verify_fun, {&verify_fun/3, reference_ids})
