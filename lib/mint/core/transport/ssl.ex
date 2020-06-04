@@ -488,7 +488,10 @@ defmodule Mint.Core.Transport.SSL do
       verify: :verify_peer,
       depth: 4,
       secure_renegotiate: true,
-      reuse_sessions: true
+      reuse_sessions: true,
+      # Allows for wildcard certificates, see
+      # http://erlang.2086793.n4.nabble.com/Wildcard-certificate-rejected-with-hostname-check-failed-tp4726616p4726628.html
+      customize_hostname_check: [{:match_fun, :public_key.pkix_verify_hostname_match_fun(:https)}]
     ]
   end
 
